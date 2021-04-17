@@ -1,3 +1,5 @@
 __pycache__
 *.csv
 *.xlsx
+.vscode
+.mypy_cache
