@@ -43,8 +43,8 @@ gold = pd.read_csv(
 def get_lon_lat(plot_id):
 
     # Get lon of particular plot
-    lon = gold[gold["smpl_plotid"] == plot_id]["lon"].iloc[0]
-    lat = gold[gold["smpl_plotid"] == plot_id]["lat"].iloc[0]
+    lon = gold[gold["pl_plotid"] == plot_id]["lon"].iloc[0]
+    lat = gold[gold["pl_plotid"] == plot_id]["lat"].iloc[0]
 
     return lon, lat
 
@@ -99,7 +99,7 @@ def get_comparison(pred_df, gold_df):
 # %%
 
 # To get the code for a single point geometry for google earth engine
-# print(get_ee_point(522687900))
+print(get_ee_point(519978296))
 
 # %%
 
