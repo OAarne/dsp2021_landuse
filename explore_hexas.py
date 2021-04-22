@@ -34,8 +34,7 @@ df = load_histo_file(pred_file)
 df["plotID"] = df["plotID"].astype(int)
 
 # Gold data
-gold = pd.read_csv(
-    Path("label_CSVs") / "training_complete.csv")
+gold = pd.read_csv(Path("label_CSVs") / "training_complete.csv")
 
 # %%
 
@@ -49,9 +48,19 @@ def get_lon_lat(plot_id):
     return lon, lat
 
 
-def get_ee_point(plot_id):
+def get_ee_point(plot_id, comp_df=None):
     lon, lat = get_lon_lat(plot_id)
-    ee = f"var point = ee.Geometry.Point([{lon}, {lat}])"
+    ee = f"var point = ee.Geometry.Point([{lon}, {lat}]);"
+    
+    try:
+        info = (
+            f"// plotID {plot_id} -- forest 2018 gold: {comp_df[comp_df['plotID'] == plot_id]['forest 2018 g'].iloc[0]}, "
+            + f"forest 2018 model: {comp_df[comp_df['plotID'] == plot_id]['forest 2018 p'].iloc[0]}\n"
+        )
+        ee = info + ee
+    except TypeError:
+        # comp_df was not specified, can't provide info.
+        pass
     return ee
 
 
@@ -96,21 +105,20 @@ def get_comparison(pred_df, gold_df):
     return results_with_labels
 
 
-# %%
-
-# To get the code for a single point geometry for google earth engine
-print(get_ee_point(519978296))
 
 # %%
 
 comp = get_comparison(df, gold)
 
-f_2018_g = comp[["plotID", "forest 2018 g", "forest 2018 p"]].sample(50)
+f_2018_g = comp[["plotID", "forest 2018 g", "forest 2018 p"]].sample(
+    50, random_state=42
+)
 
 print("Forest gold (g) vs predictions (p) with 50 randomly selected hexas: ")
 print(f_2018_g)
 print()
 
+# %%
 f_2018_p = comp[["plotID", "loss 2010-2018 g", "loss 2010-2018 p"]].sample(50)
 print("Forest loss 2018 (g) vs predictions (p) with 50 randomly selected hexas: ")
 print(f_2018_p)
@@ -140,3 +148,15 @@ sns.histplot(comp["loss 2010-2018 g"], bins=5)
 plt.title("Forest loss 2010-2018 (predictions)")
 plt.ylabel("Number of hexas")
 sns.histplot(comp["loss 2010-2018 p"], bins=5)
+
+# %%
+# comp[comp['plotID'] == 520122608]['forest 2018 g'].iloc[0]
+comp[comp["plotID"] == 520758938]["forest 2018 g"].iloc[0]
+
+# %%
+
+# To get the code for a single point geometry for google earth engine
+print(get_ee_point(520122608, comp_df=comp))
+# %%
+get_ee_point(520122608)
+# %%
