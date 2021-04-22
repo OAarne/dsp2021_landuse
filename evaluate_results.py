@@ -119,9 +119,5 @@ def visualize_score_dfs(score_dfs):
             plt.show()
 
 #%%
-# histo = load_histo_file("results/" + RESULTS_PATHS[0])
-histo = load_histo_file("results/hexas_west8_1.csv")
-# sum(histo["deforestation 2010-2018"])
-histo
 
 # Idea for results: What fraction deforestation was missed?
