@@ -52,6 +52,8 @@ def load_histo_file(path: str) -> pd.DataFrame:
 col_correspondence = {
     "deforestation 2000-2010": "% Forest Loss 2000-2010",
     "deforestation 2010-2018": "% Forest Loss 2010-2018",
+    "reforestation 2000-2010": "% Forest Gain 2000-2010",
+    "reforestation 2010-2018": "% Forest Gain 2010-2018",
 }
 
 
@@ -95,8 +97,15 @@ def get_score_df(total: pd.DataFrame) -> pd.DataFrame:
         error = np.mean(np.abs(preds - labels))
         correlation = np.corrcoef(preds, labels)[0, 1]
         # missed = (sum((preds == 0) & (labels > 0))/sum(labels > 0))*100
-        precision = (sum((preds > 0) & (labels > 0)) / sum(preds > 0)) * 100
-        recall = (sum((preds > 0) & (labels > 0)) / sum(labels > 0)) * 100
+        if sum(preds > 0) != 0:
+            precision = (sum((preds > 0) & (labels > 0)) / sum(preds > 0)) * 100
+        else:
+            precision = np.nan
+
+        if sum(labels > 0) != 0:
+            recall = (sum((preds > 0) & (labels > 0)) / sum(labels > 0)) * 100
+        else:
+            recall = np.nan
         df.loc[label_col] = [
             error,
             correlation,
