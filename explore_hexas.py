@@ -15,16 +15,18 @@ def get_root():
 
 root = get_root()
 
-pred_file = root / "results" / "finland_subset1_samples.csv"
+# pred_file = root / "results" / "finland_subset1_samples.csv"
+pred_file = root / "results" / "finland_subset1_samples_2.csv"
 
 # Get predictions
 if not pred_file.exists():
-    print("Downloading the prediction file.")
-    import os
+    print(f"File {pred_file} missing.")
+    import sys; sys.exit()
+    # import os
 
-    os.system(
-        "wget https://www.dropbox.com/s/4flndto7dztqeya/finland_subset1_samples.csv?dl=0 -O results/finland_subset1_samples.csv"
-    )
+    # os.system(
+    #     "wget https://www.dropbox.com/s/4flndto7dztqeya/finland_subset1_samples.csv?dl=0 -O results/finland_subset1_samples.csv"
+    # )
 else:
     print(f"{pred_file} exists already, no need to download it.")
 
@@ -48,16 +50,16 @@ def get_lon_lat(plot_id):
     return lon, lat
 
 
-def get_ee_point(plot_id, comp_df=None):
+def get_ee_point(plot_id, comp_df=None, i=""):
     lon, lat = get_lon_lat(plot_id)
-    ee = f"var point = ee.Geometry.Point([{lon}, {lat}]);"
+    ee = f"var point{str(i)} = ee.Geometry.Point([{lon}, {lat}]);"
     
     try:
         info = (
             f"// plotID {plot_id} -- forest 2018 gold: {comp_df[comp_df['plotID'] == plot_id]['forest 2018 g'].iloc[0]}, "
-            + f"forest 2018 model: {comp_df[comp_df['plotID'] == plot_id]['forest 2018 p'].iloc[0]}\n"
+            + f"forest 2018 model: {comp_df[comp_df['plotID'] == plot_id]['forest 2018 p'].iloc[0]}"
         )
-        ee = info + ee
+        ee = info + "\n" + ee
     except TypeError:
         # comp_df was not specified, can't provide info.
         pass
@@ -156,7 +158,39 @@ comp[comp["plotID"] == 520758938]["forest 2018 g"].iloc[0]
 # %%
 
 # To get the code for a single point geometry for google earth engine
-print(get_ee_point(520122608, comp_df=comp))
+print(get_ee_point(518200182, comp_df=comp))
 # %%
+
+# Get code snippet for a single plotID
 get_ee_point(520122608)
+# %%
+
+# Get javascript code snippet for n hexas with the most difference.
+n = 30
+
+diff = (comp["forest 2018 g"]-comp["forest 2018 p"]).abs()
+sorted_diff = diff.sort_values(axis=0, ascending=False)
+
+js_snippets = [get_ee_point(x, comp, i) for i, x in enumerate(comp["plotID"][sorted_diff.index[0:n]])]
+print("\n\n".join(js_snippets))
+
+
+# %%
+
+
+
+# %%
+df.columns
+# %%
+gold = pd.read_excel("../finland_gold.xlsx", sheet_name="Raw data original")
+gold["Forest Sub-Categories"].unique()
+# %%
+gold["Sub-Categories if Naturally regenerated forest"].unique()
+# %%
+gold["Sub-Categories if Planted forest"].unique()
+# %%
+
+comp.to_csv("percentage_results.csv", index=False)
+# %%
+comp.columns
 # %%
