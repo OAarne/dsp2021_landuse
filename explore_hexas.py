@@ -15,8 +15,14 @@ def get_root():
 
 root = get_root()
 
+# This is the one with not that good manual labels
 # pred_file = root / "results" / "finland_subset1_samples.csv"
-pred_file = root / "results" / "finland_subset1_samples_2.csv"
+
+# This is the one with better manual labels
+# pred_file = root / "results" / "finland_subset1_samples_2.csv"
+
+# This is the one with jaxa + nasa labels
+pred_file = root / "results" / "subset1_finland_auto.csv"
 
 # Get predictions
 if not pred_file.exists():
