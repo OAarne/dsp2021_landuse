@@ -14,7 +14,7 @@ RESULTS_PATHS: List[str] = [
     "results/N_se_h1-cc80.csv",
     "results/indonesia_1_0200.csv",
     "results/indonesia_2_200.csv",
-    "results/indonesia_2_180.csv"
+    "results/indonesia_2_180.csv",
 ]
 
 #%%
@@ -52,6 +52,8 @@ def load_histo_file(path: str) -> pd.DataFrame:
 col_correspondence = {
     "deforestation 2000-2010": "% Forest Loss 2000-2010",
     "deforestation 2010-2018": "% Forest Loss 2010-2018",
+    "reforestation 2000-2010": "% Forest Gain 2000-2010",
+    "reforestation 2010-2018": "% Forest Gain 2010-2018",
 }
 
 
@@ -73,14 +75,47 @@ def get_mae(total: pd.DataFrame, print_results=True) -> Dict[str, float]:
             print()
     return maes
 
+
 def get_score_df(total: pd.DataFrame) -> pd.DataFrame:
-    df = pd.DataFrame({"MAE": [], "Avg. actual": [], "Avg. predicted": []})
+    """Return a DataFrame with various summary statistics describing the results.
+
+    Precision and recall are calculated while treating the model as a binary forest loss or forest gain detector.
+    """
+    df = pd.DataFrame(
+        {
+            "MAE": [],
+            "Correlation": [],
+            "% Precision": [],
+            "% Recall": [],
+            "Avg. actual": [],
+            "Avg. predicted": [],
+        }
+    )
     for pred_col, label_col in col_correspondence.items():
         preds = np.array(total[pred_col])
         labels = np.array(total[label_col])
         error = np.mean(np.abs(preds - labels))
-        df.loc[label_col] = [error, np.mean(labels), np.mean(preds)]
+        correlation = np.corrcoef(preds, labels)[0, 1]
+        # missed = (sum((preds == 0) & (labels > 0))/sum(labels > 0))*100
+        if sum(preds > 0) != 0:
+            precision = (sum((preds > 0) & (labels > 0)) / sum(preds > 0)) * 100
+        else:
+            precision = np.nan
+
+        if sum(labels > 0) != 0:
+            recall = (sum((preds > 0) & (labels > 0)) / sum(labels > 0)) * 100
+        else:
+            recall = np.nan
+        df.loc[label_col] = [
+            error,
+            correlation,
+            precision,
+            recall,
+            np.mean(labels),
+            np.mean(preds),
+        ]
     return df
+
 
 #%%
 def main():
@@ -103,11 +138,13 @@ def main():
         print(score_df)
         score_dfs[result_file] = score_df
 
+
 #%%
 
 # sns.catplot(score_dfs[RESULTS_PATHS[0]], kind="bar")
 
 # sns.barplot(score_dfs[RESULTS_PATHS[0]])
+
 
 def visualize_score_dfs(score_dfs):
     fig, axes = plt.subplots(nrows=len(RESULTS_PATHS), ncols=len(col_correspondence))
@@ -117,6 +154,7 @@ def visualize_score_dfs(score_dfs):
         for i in range(0, len(col_correspondence)):
             plt.bar(x=score_dfs[path].columns, height=score_dfs[path].iloc[0, :])
             plt.show()
+
 
 #%%
 
