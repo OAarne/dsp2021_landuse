@@ -8,6 +8,8 @@ import seaborn as sns
 
 from evaluate_results import load_histo_file
 
+from common import get_comparison
+
 # %%
 def get_root():
     return Path(__file__).parent
@@ -15,8 +17,14 @@ def get_root():
 
 root = get_root()
 
+# This is the one with not that good manual labels
 # pred_file = root / "results" / "finland_subset1_samples.csv"
-pred_file = root / "results" / "finland_subset1_samples_2.csv"
+
+# This is the one with better manual labels
+# pred_file = root / "results" / "finland_subset1_samples_2.csv"
+
+# This is the one with jaxa + nasa labels
+pred_file = root / "results" / "subset1_finland_auto.csv"
 
 # Get predictions
 if not pred_file.exists():
@@ -88,23 +96,23 @@ def compare(plot_id):
         print(f"{data.name}: {data.iloc[0]}")
 
 
-def get_comparison(pred_df, gold_df):
-    rename_mapper = {
-        "deforestation 2000-2018": "loss 2000-2018 p",
-        "deforestation 2010-2018": "loss 2010-2018 p",
-        "forest 2000": "forest 2000 p",
-        "forest 2010": "forest 2010 p",
-        "forest 2018": "forest 2018 p",
-        "% of Forest": "forest 2018 g",
-        "% Forest Loss 2000-2010": "loss 2000-2018 g",
-        "% Forest Loss 2010-2018": "loss 2010-2018 g",
-    }
-    cols = ["plotID", *list(rename_mapper)]
-    results_with_labels = pd.merge(
-        pred_df, gold_df, how="inner", left_on="plotID", right_on="pl_plotid"
-    )[cols]
-    results_with_labels = results_with_labels.rename(columns=rename_mapper)
-    return results_with_labels
+# def get_comparison(pred_df, gold_df):
+#     rename_mapper = {
+#         "deforestation 2000-2018": "loss 2000-2018 p",
+#         "deforestation 2010-2018": "loss 2010-2018 p",
+#         "forest 2000": "forest 2000 p",
+#         "forest 2010": "forest 2010 p",
+#         "forest 2018": "forest 2018 p",
+#         "% of Forest": "forest 2018 g",
+#         "% Forest Loss 2000-2010": "loss 2000-2018 g",
+#         "% Forest Loss 2010-2018": "loss 2010-2018 g",
+#     }
+#     cols = ["plotID", *list(rename_mapper)]
+#     results_with_labels = pd.merge(
+#         pred_df, gold_df, how="inner", left_on="plotID", right_on="pl_plotid"
+#     )[cols]
+#     results_with_labels = results_with_labels.rename(columns=rename_mapper)
+#     return results_with_labels
 
 
 
@@ -132,6 +140,28 @@ print()
 
 print("All the hexas where loss 2010-2018 > 20")
 comp[comp["loss 2010-2018 g"] > 20][["plotID", "loss 2010-2018 g", "loss 2010-2018 p"]]
+#%%
+unstocked = "Temporarily unstocked"
+
+# Get rid of nan values.
+comp["Sub-Categories if Planted forest"] = comp["Sub-Categories if Planted forest"].apply(lambda x: "" if type(x) == float else x)
+comp["Sub-Categories if Naturally regenerated forest"] = comp["Sub-Categories if Naturally regenerated forest"].apply(lambda x: "" if type(x) == float else x)
+
+comp["Sub-Categories if Naturally regenerated forest"].str.contains(unstocked).sum()
+mask1 = comp["Sub-Categories if Planted forest"].str.contains(unstocked)
+mask2 = comp["Sub-Categories if Naturally regenerated forest"].str.contains(unstocked)
+mask2.sum()
+#%%
+comp["Sub-Categories if Naturally regenerated forest"].str.contains(unstocked).sum()
+#%%
+comp[comp["Sub-Categories if Planted forest"].isnull()]
+#%%
+
+comp["Sub-Categories if Planted forest"] = comp["Sub-Categories if Planted forest"].apply(lambda x: "" if type(x) == float else x)
+
+#%%
+
+sns.scatterplot(data=comp, x="forest 2018 g", y="forest 2018 p")
 
 # %%
 sns.histplot(comp["forest 2018 g"], bins=5)
