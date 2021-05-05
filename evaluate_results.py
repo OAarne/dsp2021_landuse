@@ -4,6 +4,7 @@ import numpy as np
 from typing import List, Dict
 import matplotlib.pyplot as plt
 import seaborn as sns
+from sklearn.metrics import fbeta_score
 
 import argparse
 
@@ -76,7 +77,7 @@ def get_mae(total: pd.DataFrame, print_results=True) -> Dict[str, float]:
     return maes
 
 
-def get_score_df(total: pd.DataFrame) -> pd.DataFrame:
+def get_score_df(total: pd.DataFrame, beta: float = 5.0) -> pd.DataFrame:
     """Return a DataFrame with various summary statistics describing the results.
 
     Precision and recall are calculated while treating the model as a binary forest loss or forest gain detector.
@@ -87,6 +88,7 @@ def get_score_df(total: pd.DataFrame) -> pd.DataFrame:
             "Correlation": [],
             "% Precision": [],
             "% Recall": [],
+            "F-" + str(beta): [],
             "Avg. actual": [],
             "Avg. predicted": [],
         }
@@ -106,11 +108,15 @@ def get_score_df(total: pd.DataFrame) -> pd.DataFrame:
             recall = (sum((preds > 0) & (labels > 0)) / sum(labels > 0)) * 100
         else:
             recall = np.nan
+        
+        fbeta = fbeta_score(labels > 0, preds > 0, beta=beta)
+
         df.loc[label_col] = [
             error,
             correlation,
             precision,
             recall,
+            fbeta,
             np.mean(labels),
             np.mean(preds),
         ]
