@@ -24,7 +24,6 @@ def set_heroku_vars(token_name='EARTHENGINE_TOKEN'):
                 # else:
                 #     token = content.split(':')[1][2:-2]
                 secret = '{}={}'.format(token_name, token)
-                breakpoint()
                 if platform.system() == 'Windows':
                     check_call(['heroku', 'config:set', secret], stdout=DEVNULL, stderr=STDOUT, shell=True)
                 else:
