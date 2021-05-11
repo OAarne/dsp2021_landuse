@@ -71,8 +71,12 @@ def get_comparison(pred_df, gold_df, how):
     return results_with_labels
 
 
-if __name__ == "__main__":
-    aa = load_results()
-    print(aa)
+def exclude_unstocked(df):
+    mask_planted_unstocked = df["Sub-Categories if Planted forest"] == "Temporarily unstocked planted forest"
+    mask_unstocked = df["Sub-Categories if Naturally regenerated forest"] == "Temporarily unstocked forest"
+    
+    # Rows that are NOT unstocked nor planted unstocked
+    return df[~(mask_unstocked | mask_planted_unstocked)]
+
 
 
