@@ -67,7 +67,7 @@ def get_score_df(total: pd.DataFrame, beta: float = 5.0) -> pd.DataFrame:
         correlation = np.corrcoef(preds, labels)[0, 1]
         # missed = (sum((preds == 0) & (labels > 0))/sum(labels > 0))*100
         detection_threshold = 5
-        if sum(preds > 0) != 0:
+        if sum(preds > detection_threshold) != 0:
             precision = (sum((preds > detection_threshold) & (labels > 0)) / sum(preds > detection_threshold)) * 100
         else:
             precision = np.nan
@@ -77,7 +77,7 @@ def get_score_df(total: pd.DataFrame, beta: float = 5.0) -> pd.DataFrame:
         else:
             recall = np.nan
 
-        fbeta = fbeta_score(labels > 0, preds > 0, beta=beta)
+        fbeta = fbeta_score(labels > 0, preds > detection_threshold, beta=beta)
 
         df.loc[label_col] = [
             error,
