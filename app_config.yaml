@@ -1,0 +1,9 @@
+results_dir: "results"
+results_files:
+  - "subset1_finland_auto_new.csv"
+  - "subset2_finland_auto_new.csv"
+  - "subset3_finland_auto_new.csv"
+  - "subset4_finland_auto_new.csv"
+  - "subset5_finland_auto_new.csv"
+
+confusion_matrix_country: "Finland"

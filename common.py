@@ -14,8 +14,14 @@ def get_full_path(filename, results_dir):
 
 
 def get_config():
-    with open('config.yaml') as f:
-        config = yaml.safe_load(f)
+    try:
+        with open('config.yaml') as f:
+            config = yaml.safe_load(f)
+    except FileNotFoundError:
+        # If config.yaml does not exist, use app_config.yaml.
+        # This is the case when running the app on Heroku.
+        with open('app_config.yaml') as f:
+            config = yaml.safe_load(f)
     return config
 
 def load_results():
